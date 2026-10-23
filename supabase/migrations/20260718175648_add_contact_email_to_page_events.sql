@@ -1,0 +1,1 @@
+ALTER TABLE page_events ADD COLUMN IF NOT EXISTS contact_email text;

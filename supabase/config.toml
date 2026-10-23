@@ -1,0 +1,8 @@
+[functions.send-contact-form]
+verify_jwt = false
+
+[functions.send-registration-emails]
+verify_jwt = false
+
+[functions.send-sacrament-inquiry]
+verify_jwt = false

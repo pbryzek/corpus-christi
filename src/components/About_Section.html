@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CC About Section</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0efe8;padding:24px;color:#1a1a18}
+.label{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+
+/* PAGE TABS */
+.page-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.ptab{padding:8px 16px;font-size:12px;font-weight:500;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;transition:all .15s}
+.ptab:hover{border-color:#888}
+.ptab.on{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.page{display:none}
+.page.on{display:block}
+
+.browser{border:1px solid #ccc;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);max-width:900px;margin:0 auto}
+.bar{background:#e8e7e0;padding:9px 14px;border-bottom:1px solid #d8d7d0;display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%;background:#ccc}
+.url{flex:1;background:#fff;border:1px solid #ddd;border-radius:6px;padding:3px 10px;font-size:11px;color:#aaa;margin:0 10px}
+.nav{display:flex;align-items:center;padding:0 24px;border-bottom:1px solid #e8e7e0;background:#fff}
+.logo{font-size:13px;font-weight:700;padding:12px 16px 12px 0;margin-right:12px;border-right:1px solid #e8e7e0;white-space:nowrap}
+.nav-items{display:flex;gap:0;overflow-x:auto}
+.ni{font-size:11px;color:#666;padding:12px 10px;white-space:nowrap}
+.ni.on{color:#1a1a18;font-weight:600;border-bottom:2px solid #1a1a18}
+.nav-cta{margin-left:auto;background:#1a1a18;color:#fff;font-size:11px;padding:7px 14px;border-radius:6px;white-space:nowrap;font-weight:500}
+
+/* SHARED */
+.hero{background:#1a1a18;color:#fff;padding:56px 48px;text-align:center}
+.hero-eyebrow{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#aaa;margin-bottom:16px}
+.hero-headline{font-size:32px;font-weight:300;line-height:1.3;max-width:600px;margin:0 auto;color:#fff}
+.hero-body{font-size:18px;line-height:1.8;max-width:580px;margin:0 auto;color:#ddd}
+.page-body{max-width:680px;margin:0 auto;padding:56px 24px}
+.annotation{font-size:10px;color:#e07000;font-style:italic;margin-top:6px}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn{padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600}
+.btn.primary{background:#1a1a18;color:#fff}
+.btn.secondary{background:#fff;color:#1a1a18;border:1.5px solid #1a1a18}
+.btn.tertiary{background:#fff;color:#1a1a18;border:1.5px solid #ccc}
+.footer{background:#f0efe8;border-top:1px solid #ddd;padding:24px 40px 32px}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;margin-bottom:10px}
+.footer-links span{color:#555;border-bottom:1px solid #ccc}
+.footer-meta{font-size:11px;color:#888;line-height:1.8}
+
+/* =====================
+   MISSION PAGE
+   ===================== */
+.mission-intro{font-size:16px;line-height:1.8;color:#444;margin-bottom:48px;border-bottom:1px solid #e8e7e0;padding-bottom:48px}
+.quote-block{background:#f7f6f0;border-left:4px solid #1a1a18;border-radius:0 8px 8px 0;padding:32px 36px;margin-bottom:48px}
+.quote-text{font-size:16px;line-height:1.8;color:#1a1a18;font-style:italic;margin-bottom:20px}
+.quote-attr{font-size:13px;font-weight:600;color:#666;letter-spacing:.04em}
+.closing-lead{font-size:18px;font-weight:500;line-height:1.5;margin-bottom:20px;color:#1a1a18}
+.closing-list{font-size:15px;line-height:2.2;color:#444;margin-bottom:20px}
+.closing-list span{display:block}
+.closing-kicker{font-size:16px;font-weight:600;color:#1a1a18;margin-bottom:32px}
+
+/* =====================
+   WHY CORPUS PAGE
+   ===================== */
+.wc-intro{font-size:16px;line-height:1.8;color:#444;margin-bottom:32px}
+.video-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.video-block{background:#f0efe8;border-radius:8px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1px dashed #ccc}
+.play{width:36px;height:36px;background:#1a1a18;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.play-tri{width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:14px solid #fff;margin-left:3px}
+.video-label{font-size:10px;color:#999;text-align:center}
+.transition{font-size:16px;line-height:1.8;color:#444;margin:36px 0;border-top:1px solid #e8e7e0;padding-top:36px}
+.value-block{margin-bottom:28px}
+.value-title{font-size:16px;font-weight:700;color:#1a1a18;margin-bottom:6px}
+.value-body{font-size:15px;line-height:1.7;color:#444}
+.kicker{font-size:16px;font-style:italic;color:#1a1a18;margin:40px 0 32px;border-top:1px solid #e8e7e0;padding-top:32px}
+
+/* =====================
+   STAFF PAGE
+   ===================== */
+.staff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:48px}
+.staff-card{cursor:pointer;text-align:center;transition:transform .15s}
+.staff-card:hover{transform:translateY(-4px)}
+.staff-card:hover .photo-ph-s{border-color:#1a1a18}
+.photo-ph-s{aspect-ratio:3/4;border:1.5px solid #ddd;border-radius:10px;background:#f0efe8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;font-size:10px;color:#aaa;margin-bottom:12px;transition:border-color .2s}
+.staff-name{font-size:14px;font-weight:700;color:#1a1a18;margin-bottom:2px}
+.staff-role{font-size:11px;color:#888;line-height:1.4;margin-bottom:8px}
+.staff-teaser{font-size:11px;color:#555;font-style:italic;line-height:1.5;padding:8px 4px 0;border-top:1px solid #eee}
+.click-hint{font-size:10px;color:#bbb;margin-top:8px}
+.bio-view{display:none;padding:48px}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#888;cursor:pointer;margin-bottom:36px;border:1px solid #ddd;padding:7px 14px;border-radius:8px;background:#fff}
+.back-btn:hover{color:#1a1a18;border-color:#888}
+.pull-quote{background:#1a1a18;color:#fff;border-radius:12px;padding:36px 40px;margin-bottom:36px;text-align:center}
+.pull-quote-text{font-size:22px;font-weight:300;line-height:1.5;font-style:italic}
+.bio-header{display:grid;grid-template-columns:140px 1fr;gap:28px;align-items:start;margin-bottom:32px;padding-bottom:32px;border-bottom:1px solid #e8e7e0}
+.bio-photo{aspect-ratio:3/4;border:1px solid #ddd;border-radius:10px;background:#f0efe8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;font-size:10px;color:#aaa}
+.bio-name{font-size:26px;font-weight:700;margin-bottom:4px}
+.bio-title{font-size:14px;color:#888;margin-bottom:12px}
+.bio-email{font-size:12px;color:#1a1a18;border-bottom:1px solid #1a1a18;display:inline-block}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.qa-card{border:1px solid #e8e7e0;border-radius:10px;padding:20px;background:#fff}
+.qa-card.full{grid-column:1/-1}
+.qa-card.accent{background:#f8f7f2;border-color:#ddd}
+.qa-q{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#bbb;margin-bottom:10px}
+.qa-a{font-size:13px;color:#444;line-height:1.75}
+.placeholder-card{border:2px dashed #ddd;border-radius:12px;padding:48px;text-align:center;color:#aaa;font-size:13px}
+.placeholder-card strong{display:block;font-size:18px;color:#bbb;margin-bottom:8px}
+
+/* =====================
+   CONTACT PAGE
+   ===================== */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:40px}
+.info-block{background:#f8f7f2;border:1px solid #e8e7e0;border-radius:12px;padding:32px}
+.info-block h2{font-size:18px;font-weight:700;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #e8e7e0}
+.info-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:20px}
+.info-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+.info-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#bbb;margin-bottom:4px}
+.info-value{font-size:14px;color:#1a1a18;line-height:1.6}
+.info-value a{color:#1a1a18;border-bottom:1px solid #1a1a18}
+.mass-times{background:#1a1a18;color:#fff;border-radius:12px;padding:32px}
+.mass-times h2{font-size:18px;font-weight:700;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.15)}
+.mass-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.mass-row:last-child{border-bottom:none}
+.mass-day{font-size:13px;color:#aaa}
+.mass-time{font-size:14px;font-weight:600;color:#fff}
+.map-block{margin-bottom:40px}
+.map-block h2{font-size:18px;font-weight:700;margin-bottom:16px}
+.map-ph{background:#f0efe8;border:1px dashed #ccc;border-radius:12px;height:280px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#aaa;font-size:13px}
+.staff-section h2{font-size:18px;font-weight:700;margin-bottom:8px}
+.staff-note{font-size:13px;color:#888;margin-bottom:20px}
+.staff-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.staff-item{border:1px solid #e8e7e0;border-radius:10px;padding:16px;background:#fff;display:flex;gap:12px;align-items:center}
+.staff-avatar{width:40px;height:40px;border-radius:50%;background:#f0efe8;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa;flex-shrink:0}
+.s-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.s-role{font-size:11px;color:#888;margin-bottom:4px}
+.s-email{font-size:11px;color:#1a1a18;border-bottom:1px solid #1a1a18}
+
+/* =====================
+   HISTORY PAGE
+   ===================== */
+.hist-intro{font-size:16px;line-height:1.8;color:#444;margin-bottom:40px}
+.hist-body{font-size:15px;line-height:1.8;color:#444;margin-bottom:32px}
+.photo-right{float:right;margin:0 0 24px 32px;width:260px}
+.photo-left{float:left;margin:0 32px 24px 0;width:260px}
+.photo-ph-h{border:1px solid #ccc;border-radius:10px;background:#f0efe8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;font-size:10px;color:#aaa;text-align:center;padding:16px;aspect-ratio:16/9}
+.photo-caption{font-size:10px;color:#aaa;font-style:italic;margin-top:6px;text-align:center}
+.clearfix{clear:both}
+.hist-closing{border-top:1px solid #e8e7e0;padding-top:40px;margin-top:8px}
+.hist-closing-line{font-size:18px;font-weight:600;color:#1a1a18;margin-bottom:24px}
+</style>
+</head>
+<body>
+
+<div class="label">Corpus Christi Catholic Parish — About Section Complete Wireframes</div>
+
+<!-- PAGE TABS -->
+<div class="page-tabs">
+  <div class="ptab on" onclick="showPage('mission',this)">Mission & Values</div>
+  <div class="ptab" onclick="showPage('why',this)">Why Corpus?</div>
+  <div class="ptab" onclick="showPage('staff',this)">Meet Our Staff</div>
+  <div class="ptab" onclick="showPage('contact',this)">Contact Us</div>
+  <div class="ptab" onclick="showPage('history',this)">History (Shell)</div>
+</div>
+
+<!-- ===================== MISSION ===================== -->
+<div class="page on" id="page-mission">
+<div class="browser">
+  <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">corpuschristipiedmont.org/about/mission</div></div>
+  <div class="nav"><div class="logo">Corpus Christi</div><div class="nav-items"><div class="ni on">About ▾</div><div class="ni">New? YES!</div><div class="ni">Mass & Worship</div><div class="ni">Faith Formation</div><div class="ni">Ministries</div><div class="ni">School</div><div class="ni">Give</div></div><div class="nav-cta">Join Us Sunday →</div></div>
+  <div class="hero"><div class="hero-eyebrow">Our Mission</div><div class="hero-headline">We're A Parish Shaped by A Community Who Loves It.</div></div>
+  <div class="page-body">
+    <div class="mission-intro">For nearly 100 years, Corpus Christi has been shaped by the people who show up — who serve, who welcome the stranger, and who keep returning because something here is real.</div>
+    <div class="quote-block">
+      <div class="quote-text">"One of the greatest joys of my life is telling others about Corpus Christi. And the fact that I call it a family tells you just about everything you need to know. We're not a perfect community — we're a real one. Big hopes, full hearts, and a hunger for something meaningful. And somehow, every Sunday, something happens. Strangers become neighbors. Neighbors become friends. Friends become family. Some people walk in a little weary and walk out lighter. It always moves me when I see and feel it. Everyone belongs here — all we ask is that you give us a chance to prove it."</div>
+      <div class="quote-attr">— Fr. Leo, Pastor</div>
+      <div class="annotation">→ Optional: pair with Fr. Leo's welcome video thumbnail</div>
+    </div>
+    <div class="closing-lead">Fr. Leo means every word of that. And he'll be the first to tell you: he doesn't define this parish. <strong>You do.</strong></div>
+    <div class="closing-list"><span>Your joy.</span><span>Your challenges.</span><span>Your openness.</span><span>Your gifts.</span><span>Your contributions.</span></div>
+    <div class="closing-kicker">That's what makes Corpus Christi alive.</div>
+    <div class="btn-row"><div class="btn primary">Join Us This Sunday</div><div class="btn secondary">New? YES!</div><div class="btn tertiary">Get Involved</div></div>
+  </div>
+  <div class="footer"><div class="footer-links"><span>Mass Times</span><span>Bulletins</span><span>Contact</span><span>Livestream Archive</span><span>Privacy Policy</span></div><div class="footer-meta">Saturday Vigil 5:00pm &nbsp;|&nbsp; Sunday 8:00am & 10:30am &nbsp;|&nbsp; Daily Mass Mon–Fri 8:00am<br>322 St. James Drive, Piedmont CA &nbsp;|&nbsp; 510.530.4343</div></div>
+</div>
+</div>
+
+<!-- ===================== WHY CORPUS ===================== -->
+<div class="page" id="page-why">
+<div class="browser">
+  <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">corpuschristipiedmont.org/about/why-corpus</div></div>
+  <div class="nav"><div class="logo">Corpus Christi</div><div class="nav-items"><div class="ni on">About ▾</div><div class="ni">New? YES!</div><div class="ni">Mass & Worship</div><div class="ni">Faith Formation</div><div class="ni">Ministries</div><div class="ni">School</div><div class="ni">Give</div></div><div class="nav-cta">Join Us Sunday →</div></div>
+  <div class="hero"><div class="hero-eyebrow">Why Corpus?</div><div class="hero-headline">Some Things You Just Have to Experience.</div></div>
+  <div class="page-body">
+    <div class="wc-intro">The music. The welcome. The school. Father Leo... and a community that shows up for each other in ways that still surprise us.<br><br>But don't take our word for it.</div>
+    <div class="video-row">
+      <div class="video-block"><div class="play"><div class="play-tri"></div></div><div class="video-label">Video Testimonial 1</div></div>
+      <div class="video-block"><div class="play"><div class="play-tri"></div></div><div class="video-label">Video Testimonial 2</div></div>
+      <div class="video-block"><div class="play"><div class="play-tri"></div></div><div class="video-label">Video Testimonial 3</div></div>
+    </div>
+    <div class="annotation">→ Will: embed 3 video testimonials here. Anne to provide links.</div>
+    <div class="transition">We continue to evolve — and we're 100 years young. Some things, though, have never changed:</div>
+    <div class="value-block"><div class="value-title">We take faith seriously — and ourselves lightly.</div><div class="value-body">Expect substance, humor, and homilies worth talking about at brunch.</div></div>
+    <div class="value-block"><div class="value-title">Our community found us as much as we found them.</div><div class="value-body">Across generations, backgrounds, and life stories — the diversity here just happened naturally. And it's one of our greatest gifts.</div></div>
+    <div class="value-block"><div class="value-title">We wrestle with faith openly.</div><div class="value-body">We're a community that sits with complexity, not one that pretends it's simple.</div></div>
+    <div class="value-block"><div class="value-title">We don't just welcome you — we accept you.</div><div class="value-body">Not despite who you are, but because of who you are.</div></div>
+    <div class="kicker">Come see what keeps people coming back.</div>
+    <div class="btn-row"><div class="btn primary">Join Us This Sunday</div><div class="btn secondary">New? YES!</div></div>
+  </div>
+  <div class="footer"><div class="footer-links"><span>Mass Times</span><span>Bulletins</span><span>Contact</span><span>Livestream Archive</span><span>Privacy Policy</span></div><div class="footer-meta">Saturday Vigil 5:00pm &nbsp;|&nbsp; Sunday 8:00am & 10:30am &nbsp;|&nbsp; Daily Mass Mon–Fri 8:00am<br>322 St. James Drive, Piedmont CA &nbsp;|&nbsp; 510.530.4343</div></div>
+</div>
+</div>
+
+<!-- ===================== STAFF ===================== -->
+<div class="page" id="page-staff">
+<div class="browser">
+  <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">corpuschristipiedmont.org/about/staff</div></div>
+  <div class="nav"><div class="logo">Corpus Christi</div><div class="nav-items"><div class="ni on">About ▾</div><div class="ni">New? YES!</div><div class="ni">Mass & Worship</div><div class="ni">Faith Formation</div><div class="ni">Ministries</div><div class="ni">School</div><div class="ni">Give</div></div><div class="nav-cta">Join Us Sunday →</div></div>
+  <div class="hero"><div class="hero-eyebrow">Meet Our Pastoral Staff</div><div class="hero-body">Educators, musicians, ministers, and theologians — with decades of experience and numerous advanced degrees between them. They love what they do — and it shows.</div></div>
+
+  <div class="staff-grid" id="staff-grid">
+    <div class="staff-card" onclick="showBio('leo')"><div class="photo-ph-s"><span style="font-size:24px">📷</span><span>Fr. Leo</span></div><div class="staff-name">Fr. Leo</div><div class="staff-role">Pastor</div><div class="staff-teaser">Coming soon. (He's working on it.)</div><div class="click-hint">Click to meet him →</div></div>
+    <div class="staff-card" onclick="showBio('ankie')"><div class="photo-ph-s"><span style="font-size:24px">📷</span><span>Ankie Edgar</span></div><div class="staff-name">Ankie Edgar</div><div class="staff-role">Ministry Manager</div><div class="staff-teaser">"When others shine, it brings light to our community."</div><div class="click-hint">Click to meet her →</div></div>
+    <div class="staff-card" onclick="showBio('joe')"><div class="photo-ph-s"><span style="font-size:24px">📷</span><span>Joe Hébert</span></div><div class="staff-name">Joe Hébert</div><div class="staff-role">Music Director</div><div class="staff-teaser">"I'm 60% holy water. 40% sheet music."</div><div class="click-hint">Click to meet him →</div></div>
+    <div class="staff-card" onclick="showBio('adrian')"><div class="photo-ph-s"><span style="font-size:24px">📷</span><span>Adrian Mison Fulay</span></div><div class="staff-name">Adrian Mison Fulay</div><div class="staff-role">Confirmation Director</div><div class="staff-teaser">"When a young person owns their faith, I see God's grace at work."</div><div class="click-hint">Click to meet him →</div></div>
+    <div class="staff-card" onclick="showBio('mele')"><div class="photo-ph-s"><span style="font-size:24px">📷</span><span>Mele Mortonson</span></div><div class="staff-name">Mele Mortonson</div><div class="staff-role">School Principal</div><div class="staff-teaser">"Prayer life in one word: essential."</div><div class="click-hint">Click to meet her →</div></div>
+    <div class="staff-card" onclick="showBio('rebeccah')"><div class="photo-ph-s"><span style="font-size:24px">📷</span><span>Rebeccah Pelle</span></div><div class="staff-name">Rebeccah Pelle</div><div class="staff-role">Family Faith Formation Director</div><div class="staff-teaser">"I ask Mary for the parenting moments that didn't make the Gospels."</div><div class="click-hint">Click to meet her →</div></div>
+    <div class="staff-card" onclick="showBio('anne')"><div class="photo-ph-s"><span style="font-size:24px">📷</span><span>Anne Kallin Zehren</span></div><div class="staff-name">Anne Kallin Zehren</div><div class="staff-role">OCIA & Welcome Ministry Director</div><div class="staff-teaser">"I love when someone walks in searching and walks out believing."</div><div class="click-hint">Click to meet her →</div></div>
+  </div>
+
+  <div class="bio-view" id="bio-view">
+    <div class="back-btn" onclick="showGrid()">← Back to Team</div>
+    <div id="bio-content"></div>
+  </div>
+
+  <div class="footer"><div class="footer-links"><span>Mass Times</span><span>Bulletins</span><span>Contact</span><span>Livestream Archive</span><span>Privacy Policy</span></div><div class="footer-meta">Saturday Vigil 5:00pm &nbsp;|&nbsp; Sunday 8:00am & 10:30am &nbsp;|&nbsp; Daily Mass Mon–Fri 8:00am<br>322 St. James Drive, Piedmont CA &nbsp;|&nbsp; 510.530.4343</div></div>
+</div>
+</div>
+
+<!-- ===================== CONTACT ===================== -->
+<div class="page" id="page-contact">
+<div class="browser">
+  <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">corpuschristipiedmont.org/about/contact</div></div>
+  <div class="nav"><div class="logo">Corpus Christi</div><div class="nav-items"><div class="ni on">About ▾</div><div class="ni">New? YES!</div><div class="ni">Mass & Worship</div><div class="ni">Faith Formation</div><div class="ni">Ministries</div><div class="ni">School</div><div class="ni">Give</div></div><div class="nav-cta">Join Us Sunday →</div></div>
+  <div class="hero"><div class="hero-eyebrow">Contact Us</div></div>
+  <div class="page-body">
+    <div class="two-col">
+      <div class="info-block">
+        <h2>Find Us</h2>
+        <div class="info-row"><div class="info-icon">📍</div><div><div class="info-label">Address</div><div class="info-value">322 St. James Drive<br>Piedmont, CA</div></div></div>
+        <div class="info-row"><div class="info-icon">📞</div><div><div class="info-label">Phone</div><div class="info-value">510.530.4343</div></div></div>
+        <div class="info-row"><div class="info-icon">✉️</div><div><div class="info-label">General Email</div><div class="info-value"><a href="#">office@cc-parish.org</a></div><div class="annotation">→ Will: embed to prevent scraping</div></div></div>
+      </div>
+      <div class="mass-times">
+        <h2>Mass Times</h2>
+        <div class="mass-row"><div class="mass-day">Saturday Vigil</div><div class="mass-time">5:00pm</div></div>
+        <div class="mass-row"><div class="mass-day">Sunday</div><div class="mass-time">8:00am & 10:30am</div></div>
+        <div class="mass-row"><div class="mass-day">Daily Mass (Mon–Fri)</div><div class="mass-time">8:00am</div></div>
+      </div>
+    </div>
+    <div class="map-block">
+      <h2>Getting Here</h2>
+      <div class="map-ph"><span style="font-size:32px">🗺️</span><div>Google Map — 322 St. James Drive, Piedmont CA</div><div class="annotation">→ Will: embed Google Map with driving directions</div></div>
+    </div>
+    <div class="staff-section">
+      <h2>Reach Our Staff Directly</h2>
+      <div class="staff-note">For ministry-specific needs, our team is here.</div>
+      <div class="staff-list">
+        <div class="staff-item"><div class="staff-avatar">📷</div><div><div class="s-name">Fr. Leo</div><div class="s-role">Pastor</div><div class="s-email">office@cc-parish.org</div></div></div>
+        <div class="staff-item"><div class="staff-avatar">📷</div><div><div class="s-name">Ankie Edgar</div><div class="s-role">Ministry Manager</div><div class="s-email">pastoralcare@cc-parish.org</div></div></div>
+        <div class="staff-item"><div class="staff-avatar">📷</div><div><div class="s-name">Joe Hébert</div><div class="s-role">Music Director</div><div class="s-email">ccmusic322@gmail.com</div></div></div>
+        <div class="staff-item"><div class="staff-avatar">📷</div><div><div class="s-name">Adrian Mison Fulay</div><div class="s-role">Confirmation Director</div><div class="s-email">confirmation@cc-parish.org</div></div></div>
+        <div class="staff-item"><div class="staff-avatar">📷</div><div><div class="s-name">Mele Mortonson</div><div class="s-role">School Principal</div><div class="s-email">principal.mm@corpuschristischool.com</div></div></div>
+        <div class="staff-item"><div class="staff-avatar">📷</div><div><div class="s-name">Rebeccah Pelle</div><div class="s-role">Family Faith Formation Director</div><div class="s-email">familyfaith@cc-parish.org</div></div></div>
+        <div class="staff-item"><div class="staff-avatar">📷</div><div><div class="s-name">Anne Kallin Zehren</div><div class="s-role">OCIA & Welcome Ministry Director</div><div class="s-email">annezehren@mac.com</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div class="footer-links"><span>Mass Times</span><span>Bulletins</span><span>Contact</span><span>Livestream Archive</span><span>Privacy Policy</span></div><div class="footer-meta">Saturday Vigil 5:00pm &nbsp;|&nbsp; Sunday 8:00am & 10:30am &nbsp;|&nbsp; Daily Mass Mon–Fri 8:00am<br>322 St. James Drive, Piedmont CA &nbsp;|&nbsp; 510.530.4343</div></div>
+</div>
+</div>
+
+<!-- ===================== HISTORY ===================== -->
+<div class="page" id="page-history">
+<div class="browser">
+  <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">corpuschristipiedmont.org/about/history</div></div>
+  <div class="nav"><div class="logo">Corpus Christi</div><div class="nav-items"><div class="ni on">About ▾</div><div class="ni">New? YES!</div><div class="ni">Mass & Worship</div><div class="ni">Faith Formation</div><div class="ni">Ministries</div><div class="ni">School</div><div class="ni">Give</div></div><div class="nav-cta">Join Us Sunday →</div></div>
+  <div class="hero"><div class="hero-eyebrow">Our History</div><div class="hero-headline">Nearly 100 Years of Showing Up.</div></div>
+  <div class="page-body">
+    <div class="annotation" style="margin-bottom:24px">→ All copy below is placeholder. Anne to populate with parish history.</div>
+    <div class="hist-intro">[Opening paragraph — When was Corpus Christi founded? By whom? What was the founding vision?]</div>
+    <div class="photo-right"><div class="photo-ph-h">📷<br>Historic Photo 1<br>(earliest available)</div><div class="photo-caption">[Caption — year or occasion]</div></div>
+    <div class="hist-body">[2-3 paragraphs — early decades, key moments, pastors, community growth.]</div>
+    <div class="clearfix"></div>
+    <div class="photo-left"><div class="photo-ph-h">📷<br>Historic Photo 2<br>(mid-century)</div><div class="photo-caption">[Caption — year or occasion]</div></div>
+    <div class="hist-body">[2-3 paragraphs — recent decades, school growth, community milestones, diversity, music, welcome.]</div>
+    <div class="clearfix"></div>
+    <div class="photo-right"><div class="photo-ph-h">📷<br>Historic Photo 3<br>(optional)</div><div class="photo-caption">[Caption]</div><div class="annotation" style="margin-top:6px">→ Optional — remove if not needed</div></div>
+    <div class="hist-body">[Final paragraph — bridging past to present. Nearly 100 years later, what endures?]</div>
+    <div class="clearfix"></div>
+    <div class="hist-closing"><div class="hist-closing-line">Come be part of the next chapter.</div><div class="btn-row"><div class="btn primary">Join Us This Sunday</div><div class="btn secondary">New? YES!</div></div></div>
+  </div>
+  <div class="footer"><div class="footer-links"><span>Mass Times</span><span>Bulletins</span><span>Contact</span><span>Livestream Archive</span><span>Privacy Policy</span></div><div class="footer-meta">Saturday Vigil 5:00pm &nbsp;|&nbsp; Sunday 8:00am & 10:30am &nbsp;|&nbsp; Daily Mass Mon–Fri 8:00am<br>322 St. James Drive, Piedmont CA &nbsp;|&nbsp; 510.530.4343</div></div>
+</div>
+</div>
+
+<script>
+// PAGE TABS
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('on'));
+  document.getElementById('page-' + id).classList.add('on');
+  el.classList.add('on');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// STAFF BIOS
+var bios = {
+  leo: {name:'Fr. Leo',title:'Pastor',email:'(email TBD)',placeholder:true},
+  ankie: {name:'Ankie Edgar',title:'Ministry Manager',email:'pastoralcare@cc-parish.org',
+    pullquote:'"I call myself La Sombra — the shadow."',
+    q1:'"I like being behind the scenes. I call myself \'La Sombra\' — the shadow. When others shine, it strengthens and brings light to our community. I enjoy helping others find their gifts and finding meaningful ways to use them."',
+    q2:'"My confirmation name is St. Anne — Mary\'s mother and grandmother of Jesus. We\'d talk about motherhood and the important role that women have in the family. I wonder what it was like to be Jesus\' grandmother…"',
+    q3:'"Make You Feel My Love (lyrics by Bob Dylan, performed by Adele). If you can, really listen to the words. I feel like that song is a love song from Jesus. I get choked up every time I hear it!"',
+    q4:'"Constant stream of dialogue."',
+    q5:'On staff and in ministry at Corpus Christi for over 20 years. Teacher and coach — and as Fr. Leo puts it: not allowed to leave.',
+    q6:'"If our family attends 5:00 mass, we usually pick up Chinese at Hunan Yuan on the way home — unless the Hospitality Committee is having a potluck (my husband Brad\'s favorite event!). We love the Montclair Farmers Market… and donuts after the 10:30 mass can\'t be missed!"',
+    extra:true,extraTitle:'A word from Ankie',extraText:'"Sometimes we don\'t know how bad we\'re feeling until things start to improve, especially in our spiritual lives. If you feel something is missing in your life, try talking with Jesus. He\'s a soothing balm for troubled souls."'},
+  joe: {name:'Joe Hébert',title:'Music Director',email:'ccmusic322@gmail.com',
+    pullquote:'"I\'m deeply moved by the courage it takes to sing through fear."',
+    q1:'"I\'m deeply moved by the courage it takes to sing through fear. When we trust our voices and say yes to the moment, we make room for God to work miracles, big and small."',
+    q2:'"Mother Teresa of Calcutta. I\'d ask her how we move beyond our fears to trust in the love and mercy of God. And I\'d share her two sayings that changed my life: \'A smile is the beginning of love.\' And: \'We cannot all do great things. But we can do small things with great love.\'"',
+    q3:'"Challenging question for a songwriter and musician. I\'ll start with the classical piece Nimrod by Edward Elgar."',
+    q4:'"Vulnerability, Gratitude, Trust."',
+    q5:'Classically trained musician. Symphony, orchestral conducting, choral directing, studio recordings, and performance tours throughout the US and beyond. BA Music Performance, Cal State Hayward. Graduate Studies in Pastoral Ministry, Holy Names University. Post-Baccalaureate Studies in Cello Performance, Stanford University. Director of Music Ministry in the Diocese of Oakland since 1988. "I\'ve spent so long in the Diocese, I\'m now 60% holy water and 40% sheet music."',
+    q6:'"Starbucks — a comfortable atmosphere where I can count on parishioners coming through for a quick hello or cup of coffee."'},
+  adrian: {name:'Adrian Mison Fulay',title:'Confirmation Director',email:'confirmation@cc-parish.org',
+    pullquote:'"Wonder, Gratitude, Praise."',
+    q1:'"Working with young people who are trying to live their faith and make it their own. When a young person tries to truly understand their faith in today\'s world, I see God\'s grace at work."',
+    q2:'"St. John Bosco — patron of young people. I would ask him how he was able to draw out the best in the young people he encountered and give them hope during troubled times."',
+    q3:'"These Alone Are Enough by Dan Schutte. It always reminds me to be grateful for all my blessings."',
+    q4:'"Wonder, Gratitude, Praise."',
+    q5:'BA in Political Science, Loyola Marymount University. Masters in Theological Studies, Jesuit School of Theology, Berkeley — focusing on Liturgy, Youth, and Inculturation. Catholic school educator for 32 years in Religion and Youth Ministry.',
+    q6:'"The Montclair Farmers Market for treats after Mass."'},
+  mele: {name:'Mele Mortonson',title:'School Principal',email:'principal.mm@corpuschristischool.com',
+    pullquote:'"I would listen, listen, and listen some more."',
+    q1:'"I\'m inspired by the trifecta of Catholic schools: children and their capacity to learn and love; educators and their ability to transform lives; and parents and their tireless contributions to community."',
+    q2:'"Catherine of Siena. I would listen, listen, and listen some more!"',
+    q3:'"Open My Eyes by Jesse Manabusan brings me immediately into heart-open mode. My childhood favorite was Canticle of the Sun — so much joy and gratitude, you can\'t help but smile."',
+    q4:'"Essential."',
+    q5:'BA in American Studies and Theology, Masters in American Studies — Saint Louis University. California Teaching Credential in English and Social Studies. Began teaching 8th grade at St. Elizabeth School in Oakland before becoming principal of St. Finn Barr Catholic School in San Francisco for nine years. In her fourteenth year as a Catholic school leader.',
+    q6:'"After Mass I love to head home to relax with my family and prepare a special meal or bake something new. Bonus points if the day includes a swim, walk, bike, or time together outside."'},
+  rebeccah: {name:'Rebeccah Pelle',title:'Family Faith Formation Director',email:'familyfaith@cc-parish.org',
+    pullquote:'"I love seeing kids\' faces after their first sacrament — relieved and joyful."',
+    q1:'"I love seeing kids\' faces as they return to their pew — looking relieved and joyful — after their first experience of a sacrament. I also love creating opportunities for families to talk together about their faith."',
+    q2:'"Might as well swing big. I\'d love to talk to Thomas Aquinas — informed of the latest science — about how some of his theological ideas might be different today. If he\'s unavailable, I\'d ask Mary for her best parenting moments that didn\'t make the Gospels."',
+    q3:'"In Ev\'ry Age by Janet Sullivan Whittaker has followed me for 25 years. And honestly, any secular song with a big crescendo — I\'m looking at you, Coldplay and Mumford & Sons — connects my heart to God every time."',
+    q4:'"Liminal, friendly, beckoning."',
+    q5:'In lay ministry leadership since age 16. Masters of Divinity, Jesuit School of Theology, Berkeley (2003). Previously at All Saints in Hayward and St. Augustine in Oakland.',
+    q6:'"I like to have lunch and take a deep breath on my back deck before jumping into whatever my family has planned for the afternoon."'},
+  anne: {name:'Anne Kallin Zehren',title:'OCIA & Welcome Ministry Director',email:'annezehren@mac.com',
+    pullquote:'"When someone starts having \'God Moments\' — that\'s when the real learning begins."',
+    q1:'"The Spiritual Transformation. When someone realizes they don\'t have to check their doubts at the door and they start having \'God Moments.\' That\'s when the real learning begins."',
+    q2:'"I\'d invite Saint Phoebe and Mary Magdalene to lunch. Two pioneering saints — the only deacon in the Bible, and the first witness to the resurrection. I\'d ask what it\'s like to never have their stories read during Sunday Mass. And what they\'d like people to know about them that\'s not in Scripture."',
+    q3:'"Heal My Wounds is a song I wrote during a rough period in my life, inspired by Saint Bernadette and the healing waters at Lourdes. Anything by India.Arie (a REAL musician!). And our Music Director, Joe Hébert — his voice and cello playing has brought me to tears during Mass."',
+    q4:'"Non-stop. Raw. Awe. Kind of like the Psalms."',
+    q5:'Graduate degree in Theological Studies, Jesuit School of Theology. BA, Marquette University. Trained Spiritual Director. Supposedly retired from 30 years of starting companies in Silicon Valley and NYC — including Publisher of Teen People and Glamour magazines. God had other plans. Loves mentoring female Founders and Entrepreneurs.',
+    q6:'"Coffee or brunch with my \'Church Ladies\': Mersea (if it\'s sunny), Grand Lake Kitchen, or Fentons — my son once described the Trinity with its Neapolitan ice cream, so it\'s officially Sacramental. But I\'m pretty sure Fenton\'s was sacred way before then!"'}
+};
+
+function showBio(id) {
+  var b = bios[id], html = '';
+  if (b.placeholder) {
+    html = '<div class="placeholder-card"><strong>Fr. Leo — Pastor</strong>Bio coming soon. (He\'s working on it.)<br><br><span style="font-size:11px;font-style:italic;color:#bbb">→ Note for Will: placeholder until Fr. Leo submits his Q&A answers</span></div>';
+  } else {
+    html += '<div class="pull-quote"><div class="pull-quote-text">' + b.pullquote + '</div></div>';
+    html += '<div class="bio-header"><div class="bio-photo"><span style="font-size:24px">📷</span><span>' + b.name + '</span></div>';
+    html += '<div><div class="bio-name">' + b.name + '</div><div class="bio-title">' + b.title + '</div><div class="bio-email">' + b.email + '</div></div></div>';
+    html += '<div class="qa-grid">';
+    html += '<div class="qa-card"><div class="qa-q">The most inspiring part of their ministry</div><div class="qa-a">' + b.q1 + '</div></div>';
+    html += '<div class="qa-card"><div class="qa-q">Saint they\'d have coffee with</div><div class="qa-a">' + b.q2 + '</div></div>';
+    html += '<div class="qa-card"><div class="qa-q">Song that feels like God</div><div class="qa-a">' + b.q3 + '</div></div>';
+    html += '<div class="qa-card"><div class="qa-q">Prayer life in three words</div><div class="qa-a">' + b.q4 + '</div></div>';
+    html += '<div class="qa-card full accent"><div class="qa-q">Street Cred</div><div class="qa-a">' + b.q5 + '</div></div>';
+    html += '<div class="qa-card full"><div class="qa-q">Favorite ritual after Mass</div><div class="qa-a">' + b.q6 + '</div></div>';
+    if (b.extra) html += '<div class="qa-card full accent"><div class="qa-q">' + b.extraTitle + '</div><div class="qa-a">' + b.extraText + '</div></div>';
+    html += '</div>';
+  }
+  document.getElementById('bio-content').innerHTML = html;
+  document.getElementById('staff-grid').style.display = 'none';
+  document.getElementById('bio-view').style.display = 'block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showGrid() {
+  document.getElementById('bio-view').style.display = 'none';
+  document.getElementById('staff-grid').style.display = 'grid';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
