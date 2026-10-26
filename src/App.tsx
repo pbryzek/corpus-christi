@@ -34,6 +34,11 @@ import DynamicPage from './pages/DynamicPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import PreviewPage from './pages/PreviewPage';
 import { MpLoginPage, MyGivingPage, MyPledgesPage } from './pages/GivingAccountPages';
+import HubHomePage from './pages/hub/HubHomePage';
+import EventRequestDetailPage from './pages/hub/EventRequestDetailPage';
+import HubApprovalsPage from './pages/hub/HubApprovalsPage';
+import HubFinancePage from './pages/hub/HubFinancePage';
+import HubCommsPage from './pages/hub/HubCommsPage';
 function ScrollToTop() {
   const { pathname, key } = useLocation();
   const scrollPositions = useRef<Record<string, number>>({});
@@ -89,6 +94,14 @@ function App() {
           </RequireAuth>
         } />
         <Route path="/admin" element={<Navigate to="/admin/calendar" replace />} />
+
+        {/* Ministry Leaders Hub — standalone, like /admin. HubShell handles the
+            session check and the role gate, so RequireAuth would be redundant. */}
+        <Route path="/hub" element={<HubHomePage />} />
+        <Route path="/hub/events/:id" element={<EventRequestDetailPage />} />
+        <Route path="/hub/approvals" element={<HubApprovalsPage />} />
+        <Route path="/hub/finance" element={<HubFinancePage />} />
+        <Route path="/hub/communications" element={<HubCommsPage />} />
 
         {/* All other pages share the site layout */}
         <Route element={<SiteLayout />}>
