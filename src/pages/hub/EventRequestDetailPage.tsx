@@ -7,7 +7,7 @@ import {
   EventRequest, EventWrapup, EventWrapupMedia, GenderDemographics, Reimbursement,
   ReimbursementReceipt, Room, RoomBooking,
 } from '../../lib/hubTypes';
-import { formatDateTime, formatDisplayTime, toIso } from '../../lib/parishTime';
+import { formatDateTime, formatDisplayTime, toDateStr, toIso, toTimeStr } from '../../lib/parishTime';
 import { currency, financeBadge } from '../../lib/hubFormat';
 import HubShell, { ErrorNote, Spinner, StatusBadge } from '../../components/hub/HubShell';
 import { Check, Field, inputClass } from '../../components/hub/NewEventRequestForm';
@@ -196,11 +196,13 @@ export default function EventRequestDetailPage() {
         </div>
       )}
 
-      {req.description && (
-        <Section title="Description">
-          <p className="text-sm text-slate-600 whitespace-pre-line">{req.description}</p>
-        </Section>
-      )}
+      <Section title="Event details">
+        <EventDetailsSection
+          req={req}
+          canEdit={(mine || isAdmin) && !['cancelled', 'closed'].includes(req.status)}
+          onChange={load}
+        />
+      </Section>
 
       <Section title="Rooms">
         <RoomSection
@@ -275,6 +277,167 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">{title}</h2>
       <div className="bg-white border border-slate-100 rounded-2xl p-5">{children}</div>
     </section>
+  );
+}
+
+/* ── Event details (edit) ──────────────────────────────────────────────── */
+
+/**
+ * "Update a Scheduled Event" in the workflow doc. Always goes through
+ * update_event_request_details() — never a direct client update — because
+ * that's the only path that (a) works once the leader has lost direct
+ * UPDATE rights past draft/submitted/changes_requested, and (b) propagates
+ * the edit onto the linked public calendar row when one exists.
+ */
+function EventDetailsSection({ req, canEdit, onChange }: {
+  req: EventRequest;
+  canEdit: boolean;
+  onChange: () => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(req.title);
+  const [description, setDescription] = useState(req.description ?? '');
+  const [date, setDate] = useState(toDateStr(req.starts_at));
+  const [startTime, setStartTime] = useState(toTimeStr(req.starts_at));
+  const [endTime, setEndTime] = useState(req.ends_at ? toTimeStr(req.ends_at) : '');
+  const [timeTbd, setTimeTbd] = useState(req.time_tbd);
+  const [location, setLocation] = useState(req.location ?? '');
+  const [registrationUrl, setRegistrationUrl] = useState(req.registration_url ?? '');
+  const [paymentUrl, setPaymentUrl] = useState(req.payment_url ?? '');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  function resetFromReq() {
+    setTitle(req.title);
+    setDescription(req.description ?? '');
+    setDate(toDateStr(req.starts_at));
+    setStartTime(toTimeStr(req.starts_at));
+    setEndTime(req.ends_at ? toTimeStr(req.ends_at) : '');
+    setTimeTbd(req.time_tbd);
+    setLocation(req.location ?? '');
+    setRegistrationUrl(req.registration_url ?? '');
+    setPaymentUrl(req.payment_url ?? '');
+    setError(null);
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (!timeTbd && !startTime) {
+      setError('Enter a start time, or tick "time to be decided".');
+      return;
+    }
+    const startsAt = toIso(date, timeTbd ? '00:00' : startTime);
+    const endsAt = !timeTbd && endTime ? toIso(date, endTime) : null;
+    if (endsAt && endsAt < startsAt) {
+      setError('The end time is before the start time.');
+      return;
+    }
+
+    setBusy(true);
+    const { error } = await supabase.rpc('update_event_request_details', {
+      req: req.id,
+      new_title: title.trim(),
+      new_description: description.trim() || null,
+      new_starts_at: startsAt,
+      new_ends_at: endsAt,
+      new_time_tbd: timeTbd,
+      new_location: location.trim() || null,
+      new_registration_url: registrationUrl.trim() || null,
+      new_payment_url: paymentUrl.trim() || null,
+    });
+    setBusy(false);
+
+    if (error) { setError(error.message); return; }
+    setOpen(false);
+    await onChange();
+  }
+
+  if (!open) {
+    return (
+      <div className="space-y-2">
+        {req.description && <p className="text-sm text-slate-600 whitespace-pre-line">{req.description}</p>}
+        {(req.registration_url || req.payment_url) && (
+          <p className="text-sm">
+            {req.registration_url && (
+              <a href={req.registration_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 font-medium underline mr-4">
+                Registration link
+              </a>
+            )}
+            {req.payment_url && (
+              <a href={req.payment_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-800 font-medium underline">
+                Payment link
+              </a>
+            )}
+          </p>
+        )}
+        {!req.description && !req.registration_url && !req.payment_url && (
+          <p className="text-sm text-slate-500">No description or links yet.</p>
+        )}
+        {canEdit && (
+          <button onClick={() => { resetFromReq(); setOpen(true); }} className="text-sm font-medium text-blue-700 hover:text-blue-800">
+            Edit details
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <Field label="Event name">
+        <input required value={title} onChange={e => setTitle(e.target.value)} className={inputClass} />
+      </Field>
+      <div className="grid sm:grid-cols-3 gap-4">
+        <Field label="Date">
+          <input required type="date" value={date} onChange={e => setDate(e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="Start time">
+          <input
+            type="time" value={startTime} disabled={timeTbd}
+            onChange={e => setStartTime(e.target.value)}
+            className={`${inputClass} disabled:bg-slate-50 disabled:text-slate-400`}
+          />
+        </Field>
+        <Field label="End time">
+          <input
+            type="time" value={endTime} disabled={timeTbd}
+            onChange={e => setEndTime(e.target.value)}
+            className={`${inputClass} disabled:bg-slate-50 disabled:text-slate-400`}
+          />
+        </Field>
+      </div>
+      <Check checked={timeTbd} onChange={setTimeTbd} label="Time to be decided" />
+      <Field label="Location">
+        <input value={location} onChange={e => setLocation(e.target.value)} className={inputClass} />
+      </Field>
+      <Field label="Description">
+        <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} className={inputClass} />
+      </Field>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Field label="Registration link">
+          <input type="url" value={registrationUrl} onChange={e => setRegistrationUrl(e.target.value)} className={inputClass} placeholder="https://…" />
+        </Field>
+        <Field label="Payment link">
+          <input type="url" value={paymentUrl} onChange={e => setPaymentUrl(e.target.value)} className={inputClass} placeholder="https://…" />
+        </Field>
+      </div>
+      {error && <ErrorNote message={error} />}
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={busy} className={primaryBtn}>
+          {busy ? 'Saving…' : 'Save changes'}
+        </button>
+        <button type="button" onClick={() => { setOpen(false); resetFromReq(); }} className="text-sm font-medium text-slate-600">
+          Cancel
+        </button>
+      </div>
+      {req.published_event_id && (
+        <p className="text-xs text-slate-400">
+          This event is live on the parish calendar — saving updates that listing too.
+        </p>
+      )}
+    </form>
   );
 }
 
