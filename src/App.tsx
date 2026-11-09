@@ -39,6 +39,7 @@ import EventRequestDetailPage from './pages/hub/EventRequestDetailPage';
 import HubApprovalsPage from './pages/hub/HubApprovalsPage';
 import HubFinancePage from './pages/hub/HubFinancePage';
 import HubCommsPage from './pages/hub/HubCommsPage';
+import HubCalendarPage from './pages/hub/HubCalendarPage';
 function ScrollToTop() {
   const { pathname, key } = useLocation();
   const scrollPositions = useRef<Record<string, number>>({});
@@ -102,6 +103,7 @@ function App() {
         <Route path="/hub/approvals" element={<HubApprovalsPage />} />
         <Route path="/hub/finance" element={<HubFinancePage />} />
         <Route path="/hub/communications" element={<HubCommsPage />} />
+        <Route path="/hub/calendar" element={<HubCalendarPage />} />
 
         {/* All other pages share the site layout */}
         <Route element={<SiteLayout />}>

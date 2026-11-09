@@ -96,6 +96,8 @@ export default function HubShell({ children }: { children: React.ReactNode }) {
   if (isAdmin) tabs.push({ to: '/hub/approvals', label: 'Approvals' });
   if (isFinance || isAdmin) tabs.push({ to: '/hub/finance', label: 'Finance' });
   if (isComms || isAdmin) tabs.push({ to: '/hub/communications', label: 'Communications' });
+  if (isAdmin) tabs.push({ to: '/hub/calendar', label: 'Calendar' });
+  if (isAdmin) tabs.push({ to: '/admin/calendar', label: 'Manage calendar' });
 
   return (
     <div className="min-h-screen bg-slate-50">

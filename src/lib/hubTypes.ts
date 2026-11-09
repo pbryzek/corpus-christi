@@ -100,6 +100,43 @@ export interface CommunicationsRequest {
   created_at: string;
 }
 
+export interface AgeDemographics {
+  under_18?: number;
+  '18_34'?: number;
+  '35_54'?: number;
+  '55_74'?: number;
+  '75_plus'?: number;
+}
+
+export interface GenderDemographics {
+  male?: number;
+  female?: number;
+  other?: number;
+}
+
+export interface EventWrapup {
+  id: string;
+  event_request_id: string;
+  submitted_by: string;
+  attendance_count: number | null;
+  demographics_age: AgeDemographics | null;
+  demographics_gender: GenderDemographics | null;
+  what_worked: string | null;
+  what_would_change: string | null;
+  share_with_other_ministries: boolean;
+  submitted_at: string | null;
+  created_at: string;
+}
+
+export interface EventWrapupMedia {
+  id: string;
+  wrapup_id: string;
+  storage_path: string;
+  media_type: 'photo' | 'video';
+  uploaded_by: string;
+  uploaded_at: string;
+}
+
 export interface Room {
   id: string;
   name: string;

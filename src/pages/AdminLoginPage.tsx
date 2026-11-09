@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
   }
 
   if (session) {
-    return <Navigate to="/admin/calendar" replace />;
+    return <Navigate to="/hub" replace />;
   }
 
   async function handleSubmit(e: React.FormEvent) {

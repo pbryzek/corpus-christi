@@ -3,8 +3,9 @@ import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useHubRole } from '../../lib/useHubRole';
 import {
-  BudgetRequest, CHANNEL_LABELS, CommsChannel, CommunicationsRequest,
-  EventRequest, Reimbursement, ReimbursementReceipt, Room, RoomBooking,
+  AgeDemographics, BudgetRequest, CHANNEL_LABELS, CommsChannel, CommunicationsRequest,
+  EventRequest, EventWrapup, EventWrapupMedia, GenderDemographics, Reimbursement,
+  ReimbursementReceipt, Room, RoomBooking,
 } from '../../lib/hubTypes';
 import { formatDateTime, formatDisplayTime, toIso } from '../../lib/parishTime';
 import { currency, financeBadge } from '../../lib/hubFormat';
@@ -22,6 +23,8 @@ export default function EventRequestDetailPage() {
   const [reimbursements, setReimbursements] = useState<Reimbursement[]>([]);
   const [receipts, setReceipts] = useState<ReimbursementReceipt[]>([]);
   const [comms, setComms] = useState<CommunicationsRequest[]>([]);
+  const [wrapup, setWrapup] = useState<EventWrapup | null>(null);
+  const [wrapupMedia, setWrapupMedia] = useState<EventWrapupMedia[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -32,13 +35,14 @@ export default function EventRequestDetailPage() {
     setLoading(true);
     setError(null);
 
-    const [reqRes, roomRes, bookRes, budgetRes, reimbRes, commsRes] = await Promise.all([
+    const [reqRes, roomRes, bookRes, budgetRes, reimbRes, commsRes, wrapupRes] = await Promise.all([
       supabase.from('event_requests').select('*').eq('id', id).maybeSingle(),
       supabase.from('rooms').select('id, name, capacity, is_active').eq('is_active', true).order('name'),
       supabase.from('room_bookings').select('*').eq('event_request_id', id).order('starts_at'),
       supabase.from('budget_requests').select('*').eq('event_request_id', id).order('created_at'),
       supabase.from('reimbursements').select('*').eq('event_request_id', id).order('created_at'),
       supabase.from('communications_requests').select('*').eq('event_request_id', id).order('created_at', { ascending: false }),
+      supabase.from('event_wrapups').select('*').eq('event_request_id', id).maybeSingle(),
     ]);
 
     if (reqRes.error) { setError(reqRes.error.message); setLoading(false); return; }
@@ -62,6 +66,19 @@ export default function EventRequestDetailPage() {
       setReceipts((receiptData ?? []) as ReimbursementReceipt[]);
     } else {
       setReceipts([]);
+    }
+
+    const w = (wrapupRes.data ?? null) as EventWrapup | null;
+    setWrapup(w);
+    if (w) {
+      const { data: mediaData } = await supabase
+        .from('event_wrapup_media')
+        .select('*')
+        .eq('wrapup_id', w.id)
+        .order('uploaded_at');
+      setWrapupMedia((mediaData ?? []) as EventWrapupMedia[]);
+    } else {
+      setWrapupMedia([]);
     }
     setLoading(false);
   }, [id]);
@@ -231,6 +248,18 @@ export default function EventRequestDetailPage() {
           />
         </Section>
       )}
+
+      {(['published', 'held', 'closed'].includes(req.status) && (mine || isAdmin)) || wrapup ? (
+        <Section title="Post-event wrap-up">
+          <WrapupSection
+            requestId={req.id}
+            wrapup={wrapup}
+            media={wrapupMedia}
+            canEdit={mine || isAdmin}
+            onChange={load}
+          />
+        </Section>
+      ) : null}
     </HubShell>
   );
 }
@@ -800,6 +829,242 @@ function ReimbursementSection({ requestId, userId, reimbursements, receipts, onC
           </div>
         </form>
       )}
+    </div>
+  );
+}
+
+/* ── Post-event wrap-up ─────────────────────────────────────────────────── */
+
+const AGE_BUCKETS: { key: keyof AgeDemographics; label: string }[] = [
+  { key: 'under_18', label: 'Under 18' },
+  { key: '18_34', label: '18–34' },
+  { key: '35_54', label: '35–54' },
+  { key: '55_74', label: '55–74' },
+  { key: '75_plus', label: '75+' },
+];
+
+const GENDER_BUCKETS: { key: keyof GenderDemographics; label: string }[] = [
+  { key: 'male', label: 'Male' },
+  { key: 'female', label: 'Female' },
+  { key: 'other', label: 'Other / unspecified' },
+];
+
+function toCounts<K extends string>(obj: Partial<Record<K, number>> | null | undefined, keys: K[]): Record<K, string> {
+  const out = {} as Record<K, string>;
+  for (const k of keys) out[k] = obj?.[k] != null ? String(obj[k]) : '';
+  return out;
+}
+
+function toJsonbOrNull<K extends string>(counts: Record<K, string>): Partial<Record<K, number>> | null {
+  const out: Partial<Record<K, number>> = {};
+  let any = false;
+  for (const k in counts) {
+    const v = counts[k as K].trim();
+    if (v !== '') { out[k as K] = Number(v); any = true; }
+  }
+  return any ? out : null;
+}
+
+/**
+ * Submitting always goes through submit_event_wrapup() — never a direct
+ * insert — because that RPC is also the only thing allowed to flip the
+ * parent event_request to 'closed' (a leader has no direct UPDATE right on
+ * a published row; see event_requests_update's RLS).
+ */
+function WrapupSection({ requestId, wrapup, media, canEdit, onChange }: {
+  requestId: string;
+  wrapup: EventWrapup | null;
+  media: EventWrapupMedia[];
+  canEdit: boolean;
+  onChange: () => Promise<void>;
+}) {
+  const { userId } = useHubRole();
+  const [attendance, setAttendance] = useState('');
+  const [age, setAge] = useState<Record<keyof AgeDemographics, string>>(toCounts(null, AGE_BUCKETS.map(b => b.key)));
+  const [gender, setGender] = useState<Record<keyof GenderDemographics, string>>(toCounts(null, GENDER_BUCKETS.map(b => b.key)));
+  const [worked, setWorked] = useState('');
+  const [changed, setChanged] = useState('');
+  const [share, setShare] = useState(false);
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [signing, setSigning] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAttendance(wrapup?.attendance_count != null ? String(wrapup.attendance_count) : '');
+    setAge(toCounts(wrapup?.demographics_age, AGE_BUCKETS.map(b => b.key)));
+    setGender(toCounts(wrapup?.demographics_gender, GENDER_BUCKETS.map(b => b.key)));
+    setWorked(wrapup?.what_worked ?? '');
+    setChanged(wrapup?.what_would_change ?? '');
+    setShare(wrapup?.share_with_other_ministries ?? false);
+  }, [wrapup]);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+
+    const { data: wrapupId, error: rpcError } = await supabase.rpc('submit_event_wrapup', {
+      req: requestId,
+      attendance: attendance.trim() === '' ? null : Number(attendance),
+      age_demo: toJsonbOrNull(age),
+      gender_demo: toJsonbOrNull(gender),
+      worked: worked.trim() || null,
+      would_change: changed.trim() || null,
+      share,
+    });
+
+    if (rpcError) {
+      setError(rpcError.message);
+      setBusy(false);
+      return;
+    }
+
+    if (files && files.length > 0) {
+      for (const file of Array.from(files)) {
+        const path = `${wrapupId}/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('event-wrapup-media')
+          .upload(path, file, { contentType: file.type || 'application/octet-stream' });
+        if (uploadError) {
+          setError(`Wrap-up saved, but "${file.name}" failed to upload: ${uploadError.message}`);
+          continue;
+        }
+        await supabase.from('event_wrapup_media').insert({
+          wrapup_id: wrapupId,
+          storage_path: path,
+          media_type: file.type.startsWith('video') ? 'video' : 'photo',
+          uploaded_by: userId,
+        });
+      }
+    }
+
+    setBusy(false);
+    setFiles(null);
+    await onChange();
+  }
+
+  async function viewMedia(path: string) {
+    setSigning(path);
+    const { data, error } = await supabase.storage.from('event-wrapup-media').createSignedUrl(path, 60);
+    setSigning(null);
+    if (error || !data) {
+      setError(`Could not open that file: ${error?.message ?? 'unknown error'}`);
+      return;
+    }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  const summary = wrapup && (
+    <div className="mb-4 bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3 text-sm text-emerald-900">
+      Wrap-up submitted {wrapup.submitted_at ? formatDateTime(wrapup.submitted_at) : ''} — this event is closed.
+    </div>
+  );
+
+  const mediaList = media.length > 0 && (
+    <div className="mb-5">
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Photos &amp; videos</p>
+      <div className="flex flex-wrap gap-2">
+        {media.map(m => (
+          <button
+            key={m.id}
+            onClick={() => void viewMedia(m.storage_path)}
+            disabled={signing === m.storage_path}
+            className="text-xs font-medium text-blue-700 hover:text-blue-800 underline disabled:opacity-60"
+          >
+            {signing === m.storage_path ? 'Opening…' : `View ${m.media_type}`}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (!canEdit) {
+    return (
+      <div>
+        {summary}
+        {mediaList}
+        {wrapup?.what_worked && <p className="text-sm text-slate-600"><span className="font-medium">What worked:</span> {wrapup.what_worked}</p>}
+        {wrapup?.what_would_change && <p className="text-sm text-slate-600 mt-1"><span className="font-medium">What they'd change:</span> {wrapup.what_would_change}</p>}
+        {!wrapup && <p className="text-sm text-slate-500">No wrap-up submitted yet.</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {summary}
+      {mediaList}
+      <form onSubmit={submit} className="space-y-4">
+        <Field label="Attendance (estimate)">
+          <input
+            type="number" min="0" step="1"
+            value={attendance} onChange={e => setAttendance(e.target.value)}
+            className={inputClass} placeholder="How many people came?"
+          />
+        </Field>
+
+        <fieldset>
+          <legend className="text-sm font-medium text-slate-700 mb-2">Estimated age range (optional)</legend>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {AGE_BUCKETS.map(b => (
+              <Field key={b.key} label={b.label}>
+                <input
+                  type="number" min="0" step="1"
+                  value={age[b.key]} onChange={e => setAge(prev => ({ ...prev, [b.key]: e.target.value }))}
+                  className={inputClass}
+                />
+              </Field>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend className="text-sm font-medium text-slate-700 mb-2">Estimated gender mix (optional)</legend>
+          <div className="grid grid-cols-3 gap-3">
+            {GENDER_BUCKETS.map(b => (
+              <Field key={b.key} label={b.label}>
+                <input
+                  type="number" min="0" step="1"
+                  value={gender[b.key]} onChange={e => setGender(prev => ({ ...prev, [b.key]: e.target.value }))}
+                  className={inputClass}
+                />
+              </Field>
+            ))}
+          </div>
+        </fieldset>
+        <p className="text-xs text-slate-400 -mt-2">
+          Rough estimates are fine — none of this is required.
+        </p>
+
+        <Field label="What worked well?">
+          <textarea rows={2} value={worked} onChange={e => setWorked(e.target.value)} className={inputClass} />
+        </Field>
+        <Field label="What would you do differently?">
+          <textarea rows={2} value={changed} onChange={e => setChanged(e.target.value)} className={inputClass} />
+        </Field>
+
+        <Check checked={share} onChange={setShare} label="Share these lessons with other ministry groups" />
+
+        <Field label="Add photos or videos">
+          <input
+            type="file" multiple accept="image/*,video/*"
+            onChange={e => setFiles(e.target.files)}
+            className="block w-full text-sm text-slate-600"
+          />
+        </Field>
+
+        {error && <ErrorNote message={error} />}
+
+        <button type="submit" disabled={busy} className={primaryBtn}>
+          {busy ? 'Saving…' : wrapup ? 'Update wrap-up' : 'Submit wrap-up & close event'}
+        </button>
+        {!wrapup && (
+          <p className="text-xs text-slate-400">
+            Submitting closes this event out — you can still come back and add more photos or edit this afterward.
+          </p>
+        )}
+      </form>
     </div>
   );
 }
